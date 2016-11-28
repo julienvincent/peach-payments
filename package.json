@@ -1,0 +1,14 @@
+{
+  "name": "peach-payments",
+  "version": "0.0.1",
+  "main": "lib/index.js",
+  "repository": {
+    "url": "git@github.com:yumochefs/peach-payments.git",
+    "type": "git"
+  },
+  "author": "Julien Vincent",
+  "license": "MIT",
+  "dependencies": {
+    "querystring": "^0.2.0"
+  }
+}
