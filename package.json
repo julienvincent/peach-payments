@@ -1,7 +1,7 @@
 {
   "name": "peach-payments",
   "description": "A client library for handling Peach Payments registrations and transactions",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "lib/index.js",
   "repository": {
     "url": "git@github.com:yumochefs/peach-payments.git",
