@@ -87,7 +87,7 @@ class Peach {
       }
    }
 
-   createCard = (card: Card) => {
+   addCard = (card: Card) => {
       if (!card.holder) throw new Error('Missing payer name')
       if (!card.brand) throw new Error('Missing payment brand')
       if (!card.number) throw new Error('Missing card number')
@@ -108,7 +108,11 @@ class Peach {
       })
    }
 
-   createTransaction = (transaction: Transaction) => {
+   deleteCard = (cardId: string) => {
+
+   }
+
+   makeTransaction = (transaction: Transaction) => {
       if (!transaction.cardId) throw new Error('Missing cardId')
       if (!transaction.amount) throw new Error('Missing amount')
 
