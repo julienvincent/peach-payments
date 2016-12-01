@@ -41,15 +41,15 @@ type Transaction = {
    currency: ?string
 }
 
-const Fetch = (url, query) => {
+const Fetch = (url, {body, method}) => {
    let status
 
    return fetch(url, {
       headers: {
          'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8"
       },
-      method: "POST",
-      body: QueryString.stringify(query)
+      method: method || "POST",
+      ...(body ? {body: QueryString.stringify(body)} : {})
    })
       .then(res => {
          status = res.status
@@ -88,7 +88,7 @@ class Peach {
    }
 
    addCard = (card: Card) => {
-      if (!card.holder) throw new Error('Missing payer name')
+      if (!card.holder) throw new Error('Missing holder')
       if (!card.brand) throw new Error('Missing payment brand')
       if (!card.number) throw new Error('Missing card number')
       if (!card.expiryMonth) throw new Error('Missing card expiryMonth')
@@ -96,20 +96,25 @@ class Peach {
       if (!card.cvv) throw new Error('Missing card cvv')
 
       return Fetch(`${this.config.endpoint}/v1/registrations`, {
-         paymentBrand: card.brand,
+         body: {
+            ...this.config.authentication,
 
-         ...this.config.authentication,
-
-         'card.number': card.number,
-         'card.holder': card.holder,
-         'card.expiryMonth': card.expiryMonth,
-         'card.expiryYear': card.expiryYear,
-         'card.cvv': card.cvv
+            paymentBrand: card.brand,
+            'card.number': card.number,
+            'card.holder': card.holder,
+            'card.expiryMonth': card.expiryMonth,
+            'card.expiryYear': card.expiryYear,
+            'card.cvv': card.cvv
+         }
       })
    }
 
-   deleteCard = (cardId: string) => {
+   removeCard = (cardId: string) => {
+      if (!cardId) throw new Error('Missing cardId')
 
+      return Fetch(`${this.config.endpoint}/v1/registrations/${cardId}?${QueryString.stringify(this.config.authentication)}`, {
+         method: "DELETE"
+      })
    }
 
    makeTransaction = (transaction: Transaction) => {
@@ -117,27 +122,36 @@ class Peach {
       if (!transaction.amount) throw new Error('Missing amount')
 
       return Fetch(`${this.config.endpoint}/v1/registrations/${transaction.cardId}/payments`, {
-         ...this.config.authentication,
+         body: {
+            ...this.config.authentication,
 
-         amount: transaction.amount,
-         currency: transaction.currency || this.config.currency,
-         paymentType: transaction.type || "DB"
+            amount: transaction.amount,
+            currency: transaction.currency || this.config.currency,
+            paymentType: transaction.type || "DB"
+         }
       })
    }
 
-   refundTransaction = () => {
+   refundTransaction = (transaction: Transaction) => {
+      if (!transaction.transactionId) throw new Error('Missing transactionId')
+      if (!transaction.amount) throw new Error('Missing amount')
 
-      //
-      // if (!data.transactionId) throw new Error('Missing transactionId');
-      // if (!data.amount) throw new Error('Missing amount');
-      //
-      // var body = {
-      //    'amount': data.amount,
-      //    'currency': config.currency,
-      //    'paymentType': 'RF',
-      // }
-      // var path = '/v1/payments/' + data.transactionId;
-      //
-      // return request(path, 'POST', body);
+      return Fetch(`${this.config.endpoint}/v1/payments/${transaction.transactionId}`, {
+         body: {
+            ...this.config.authentication,
+
+            amount: transaction.amount,
+            currency: transaction.currency || this.config.currency,
+            paymentType: "RF"
+         }
+      })
+   }
+
+   getTransaction = (transactionId: ?string) => {
+      if (!transactionId) throw new Error('Missing transactionId')
+
+      return Fetch(`${this.config.endpoint}/v1/payments/${transactionId}?${QueryString.stringify(this.config.authentication)}`, {
+         method: "GET"
+      })
    }
 }
